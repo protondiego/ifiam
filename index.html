@@ -3141,10 +3141,15 @@
   .b-btn { padding: 6px 20px; font-size: 13px; font-weight: 500; background: transparent; border: 1px solid rgba(255,255,255,.2); border-radius: 16px; color: var(--text-dim); cursor: pointer; transition: all .2s; text-transform: uppercase; letter-spacing: 0.05em;}
   .b-btn:hover { border-color: rgba(255,255,255,.4); color: var(--text); }
   .b-btn.active { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.5); color: var(--white); }
-  #win-breath .breath-mode-icon-row { display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
-  #win-breath .breath-overlay-toggle-row { display: flex; justify-content: center; margin-bottom: 10px; }
-  #win-breath #breathOverlayBtn { padding: 7px 16px; font-size: 11px; font-weight: 500; text-transform: none; letter-spacing: 0.03em; border-radius: 12px; max-width: 100%; }
-  #win-breath #breathOverlayBtn.active { background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.45); color: var(--white); }
+  #win-breath .breath-mode-icon-row { display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+  #win-breath .breath-volume-faders-row { display: flex; flex-direction: row; flex-wrap: wrap; justify-content: center; align-items: flex-end; gap: 10px; width: 100%; margin-bottom: 10px; }
+  #win-breath .breath-overlay-toggle-row { display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+  #win-breath .breath-overlay-toggle-row .b-btn--icon.active { background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.45); color: var(--white); }
+  #win-breath.breath-beat-overlay-off .breath-col-beat .breath-spo2-wrap,
+  #win-breath.breath-beat-overlay-off .breath-col-beat .breath-bp-wrap,
+  #win-breath.breath-beat-overlay-off .breath-col-beat .breath-ekg-wrap,
+  #win-breath.breath-beat-overlay-off .breath-col-beat .breath-hgb-wrap { display: none !important; }
+  #win-breath.breath-cry-overlay-off .breath-bottom-piano-col { display: none !important; }
   /* Overlay off: no instruction panel — organs + breath box SVG only over sky */
   #win-breath.breath-overlay-off .breath-col-viewport .breath-state-top,
   #win-breath.breath-overlay-off .breath-col-viewport .breath-state-bottom { display: none !important; }
@@ -4453,8 +4458,23 @@
                 <svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="9.85" cy="17.35" rx="5.2" ry="3.45" fill="currentColor" stroke="none" transform="rotate(-38 9.85 17.35)"/><path fill="none" stroke="currentColor" stroke-width="1.68" stroke-linecap="round" d="M14.9 4.65V15.05"/></svg>
               </button>
             </div>
-            <div class="breath-overlay-toggle-row">
-              <button type="button" class="b-btn active" id="breathOverlayBtn" title="Show instruction panel over the breath viewport" aria-label="Breath overlay" aria-pressed="true">Breath overlay</button>
+            <div class="breath-volume-faders-row" aria-label="Levels">
+              <div class="sync-col"><canvas class="knob" data-type="fader" data-lbl="HB Vol" data-min="0" data-max="100" data-val="78" data-key="hbVol" data-color="#e84040"></canvas></div>
+              <div class="sync-col"><canvas class="knob" data-type="fader" data-lbl="In Vol" data-min="0" data-max="100" data-val="82" data-key="inVol" data-color="#00ffff"></canvas></div>
+              <div class="sync-col"><canvas class="knob" data-type="fader" data-lbl="Out Vol" data-min="0" data-max="100" data-val="82" data-key="exVol" data-color="#ff00ff"></canvas></div>
+              <div class="sync-col"><canvas class="knob" data-type="fader" data-lbl="Air lines" data-min="0" data-max="100" data-val="72" data-key="brStreamVis" data-int="0" data-color="#a8d4f0" title="Inhale/exhale glottis line stream strength"></canvas></div>
+              <div class="sync-col"><canvas class="knob" data-type="fader" data-lbl="Cry Vol" data-min="0" data-max="100" data-val="42" data-key="hVol" data-color="#ff00ff"></canvas></div>
+            </div>
+            <div class="breath-overlay-toggle-row" role="toolbar" aria-label="Viewport and strip overlays">
+              <button type="button" class="b-btn b-btn--icon active" id="breathOverlayBtn" title="Breath overlay — phase text and frame on the viewport" aria-label="Breath overlay" aria-pressed="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M8 9h8M8 13h5"/></svg>
+              </button>
+              <button type="button" class="b-btn b-btn--icon active" id="beatOverlayBtn" title="Beat overlay — vitals column (SpO₂, BP, EKG, hemoglobin)" aria-label="Beat vitals overlay" aria-pressed="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h3l2-6 3 12 2-8 2 8 3-12 2 6h3"/></svg>
+              </button>
+              <button type="button" class="b-btn b-btn--icon active" id="cryOverlayBtn" title="Cry overlay — exhale piano roll strip" aria-label="Cry piano roll overlay" aria-pressed="true">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 18V8h2v10H8zm4 0V5h2v13h-2zm4 0v-7h2v7h-2z"/></svg>
+              </button>
             </div>
             <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; justify-content:center;">
               <select id="preset" class="os-select" style="margin-bottom:0;">
@@ -4475,7 +4495,6 @@
               </select>
             </div>
             <div style="display:flex; flex-direction:row; flex-wrap:wrap; justify-content:center; gap:12px; width:100%; align-items:flex-end; margin-top:8px;">
-              <div class="sync-col"><canvas class="knob" data-type="fader" data-lbl="HB Vol" data-min="0" data-max="100" data-val="78" data-key="hbVol" data-color="#e84040"></canvas></div>
               <div class="sync-col">
                 <canvas class="knob" data-type="knob" data-lbl="Pitch" data-min="20" data-max="300" data-val="40" data-key="hbFreq" data-log="1" data-color="#e84040"></canvas>
                 <select id="syncBeat" class="sync-select"><option value="free">Free</option><option value="heart">Heart</option><option value="mind">Mind</option><option value="body">Body</option><option value="dream">Dream</option></select>
@@ -4494,15 +4513,6 @@
               <canvas class="knob" data-type="knob" data-lbl="Hold Out" data-min="0" data-max="20" data-val="6" data-key="so" data-int="0" data-color="#ff0000"></canvas>
             </div>
             <div style="display:flex; flex-direction:row; flex-wrap:wrap; justify-content:center; gap:12px; width:100%; align-items:flex-end;">
-              <div class="sync-col">
-                <canvas class="knob" data-type="fader" data-lbl="In Vol" data-min="0" data-max="100" data-val="82" data-key="inVol" data-color="#00ffff"></canvas>
-              </div>
-              <div class="sync-col">
-                <canvas class="knob" data-type="fader" data-lbl="Out Vol" data-min="0" data-max="100" data-val="82" data-key="exVol" data-color="#ff00ff"></canvas>
-              </div>
-              <div class="sync-col">
-                <canvas class="knob" data-type="fader" data-lbl="Air lines" data-min="0" data-max="100" data-val="72" data-key="brStreamVis" data-int="0" data-color="#a8d4f0" title="Inhale/exhale glottis line stream strength"></canvas>
-              </div>
               <div class="sync-col">
                 <canvas class="knob" data-type="knob" data-lbl="Breath pitch" data-min="250" data-max="7000" data-val="1200" data-key="brHz" data-int="0" data-log="1" data-color="#7ec8e3"></canvas>
               </div>
@@ -4555,7 +4565,6 @@
             </div>
             <div style="display:flex; gap:6px; align-items:center; margin-top:4px; flex-wrap:wrap; justify-content:center;">
               <span class="pr-title" style="margin-bottom:0; width:auto;">Cry</span>
-              <div class="sync-col"><canvas class="knob" data-type="fader" data-lbl="Cry Vol" data-min="0" data-max="100" data-val="78" data-key="hVol" data-color="#ff00ff"></canvas></div>
               <div class="sync-col">
                 <canvas class="knob" data-type="knob" data-lbl="Pitch" data-min="20" data-max="20000" data-val="136" data-key="hHz" data-log="1" data-color="#ff00ff"></canvas>
                 <select id="syncHum" class="sync-select"><option value="free">Free</option><option value="heart" selected>Heart</option><option value="mind">Mind</option><option value="body">Body</option><option value="dream">Dream</option></select>
@@ -13571,7 +13580,7 @@ function drawDreamClock(ctx, layout) {
 var brNS='http://www.w3.org/2000/svg';
 var brRoot=document.getElementById('breathRoot'),brSvg=document.getElementById('svg');
 var winBreathForOverlay=document.getElementById('win-breath');
-var togBreathBtn=document.getElementById('togBreath'),cryBtn=document.getElementById('cryBtn'),hbBtn=document.getElementById('hbBtn'),breathOverlayBtn=document.getElementById('breathOverlayBtn');
+var togBreathBtn=document.getElementById('togBreath'),cryBtn=document.getElementById('cryBtn'),hbBtn=document.getElementById('hbBtn'),breathOverlayBtn=document.getElementById('breathOverlayBtn'),beatOverlayBtn=document.getElementById('beatOverlayBtn'),cryOverlayBtn=document.getElementById('cryOverlayBtn');
 function applyBreathOverlayUi(showOverlay){
   if(!winBreathForOverlay)return;
   winBreathForOverlay.classList.toggle('breath-overlay-off',!showOverlay);
@@ -13596,6 +13605,22 @@ function applyBreathOverlayUi(showOverlay){
   })();
   // #endregion
 }
+function applyBeatVitalsOverlayUi(show){
+  if(!winBreathForOverlay)return;
+  winBreathForOverlay.classList.toggle('breath-beat-overlay-off',!show);
+  if(beatOverlayBtn){
+    beatOverlayBtn.classList.toggle('active',!!show);
+    beatOverlayBtn.setAttribute('aria-pressed',show?'true':'false');
+  }
+}
+function applyCryStripOverlayUi(show){
+  if(!winBreathForOverlay)return;
+  winBreathForOverlay.classList.toggle('breath-cry-overlay-off',!show);
+  if(cryOverlayBtn){
+    cryOverlayBtn.classList.toggle('active',!!show);
+    cryOverlayBtn.setAttribute('aria-pressed',show?'true':'false');
+  }
+}
 (function initBreathOverlayFromStorage(){
   var on=true;
   try{var st=localStorage.getItem('ifiam_breath_overlay');if(st==='0')on=false;}catch(e){}
@@ -13606,6 +13631,27 @@ breathOverlayBtn&&(breathOverlayBtn.onclick=function(){
   var next=!curOn;
   applyBreathOverlayUi(next);
   try{localStorage.setItem('ifiam_breath_overlay',next?'1':'0');}catch(e){}
+});
+(function initBeatCryOverlaysFromStorage(){
+  var bOn=true,cOn=true;
+  try{if(localStorage.getItem('ifiam_breath_beat_overlay')==='0')bOn=false;}catch(e){}
+  try{if(localStorage.getItem('ifiam_breath_cry_overlay')==='0')cOn=false;}catch(e){}
+  applyBeatVitalsOverlayUi(bOn);
+  applyCryStripOverlayUi(cOn);
+})();
+beatOverlayBtn&&(beatOverlayBtn.onclick=function(){
+  if(!winBreathForOverlay)return;
+  var curOn=!winBreathForOverlay.classList.contains('breath-beat-overlay-off');
+  var next=!curOn;
+  applyBeatVitalsOverlayUi(next);
+  try{localStorage.setItem('ifiam_breath_beat_overlay',next?'1':'0');}catch(e){}
+});
+cryOverlayBtn&&(cryOverlayBtn.onclick=function(){
+  if(!winBreathForOverlay)return;
+  var curOn=!winBreathForOverlay.classList.contains('breath-cry-overlay-off');
+  var next=!curOn;
+  applyCryStripOverlayUi(next);
+  try{localStorage.setItem('ifiam_breath_cry_overlay',next?'1':'0');}catch(e){}
 });
 var presetSel=document.getElementById('preset');
 var breathRunning=false,cryOn=false,hbOn=false,cryPlaying=false;
