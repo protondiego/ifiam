@@ -7409,7 +7409,8 @@ function tryResumeSysAudioCtx(reason) {
     var st = sysAudioCtx.state;
     if (st === 'running') return;
     if (st === 'closed') {
-        __ifiamAudioDiag('tryResume:closed', { reason: reason });
+        __ifiamAudioDiag('tryResume:closed-recover', { reason: reason });
+        ensureSysAudioEnabled();
         return;
     }
     var now = Date.now();
@@ -7431,13 +7432,30 @@ function tryResumeSysAudioCtx(reason) {
 }
 // #endregion
 
+function wireSysAudioCtxStateHandler() {
+    if (!sysAudioCtx) return;
+    sysAudioCtx.onstatechange = function () {
+        if (!sysAudioCtx) return;
+        var s = sysAudioCtx.state;
+        if (s === 'suspended' || s === 'interrupted') tryResumeSysAudioCtx('ctx-statechange');
+    };
+}
+
 function ensureSysAudioEnabled() {
-    if (isSysAudioEnabled) {
+    if (isSysAudioEnabled && sysAudioCtx && sysAudioCtx.state !== 'closed') {
         tryResumeSysAudioCtx('ensure-repeat');
         return;
     }
+    if (sysAudioCtx && sysAudioCtx.state === 'closed') {
+        sysAudioCtx = null;
+        isSysAudioEnabled = false;
+        if (typeof window.__ifiamInvalidateTalkAudio === 'function') window.__ifiamInvalidateTalkAudio();
+    } else if (isSysAudioEnabled && !sysAudioCtx) {
+        isSysAudioEnabled = false;
+    }
     sysAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
     initAudioEngine();
+    wireSysAudioCtxStateHandler();
     isSysAudioEnabled = true;
     tryResumeSysAudioCtx('ensure-init');
 }
@@ -14790,7 +14808,7 @@ document.addEventListener('touchstart', function () {
     tryResumeSysAudioCtx('touchstart');
 }, { capture: true, passive: true });
 window.addEventListener('pageshow', function (ev) {
-    if (ev.persisted) tryResumeSysAudioCtx('pageshow');
+    tryResumeSysAudioCtx(ev.persisted ? 'pageshow-bfcache' : 'pageshow');
 });
 
 function masterTimeLoop(now){
@@ -16677,6 +16695,15 @@ function updateMouth(artParams, isVoiced, isAir, bankId = 'A') {
 // =====================================================================
 // SYNTHESIS ENGINE
 // =====================================================================
+window.__ifiamInvalidateTalkAudio = function __ifiamInvalidateTalkAudio() {
+    try { if (typeof timerID !== 'undefined' && timerID) window.clearTimeout(timerID); } catch (_e) {}
+    timerID = undefined;
+    audioCtx = null;
+    formantFilters = [];
+    glottalOsc = aspirationNoise = fricationNoise = vibratoOsc = vibratoGain = undefined;
+    masterLowpass = masterGain = vVoiceGain = vAspGain = vFricGain = fricFilter = undefined;
+};
+
 function updateGlottalWave() {
     if(!audioCtx || !glottalOsc || currentBank === 'M') return; 
     let t = voiceBanks[currentBank].timbre;
@@ -16686,8 +16713,10 @@ function updateGlottalWave() {
 }
 
 function initAudio() {
-    if (audioCtx) return;
+    if (audioCtx && typeof sysAudioCtx !== 'undefined' && sysAudioCtx && audioCtx === sysAudioCtx && audioCtx.state !== 'closed') return;
+    if (typeof window.__ifiamInvalidateTalkAudio === 'function') window.__ifiamInvalidateTalkAudio();
     ensureSysAudioEnabled();
+    if (!sysAudioCtx) return;
     audioCtx = sysAudioCtx;
     masterGain = audioCtx.createGain(); masterGain.gain.value = 1.05;
     let comp = audioCtx.createDynamicsCompressor(); comp.threshold.value = -12; comp.ratio.value = 6; comp.attack.value = 0.01; comp.release.value = 0.1;
@@ -16937,22 +16966,38 @@ function scheduler() {
 function startTalkPlaybackAfterContextRunning() {
     initAudio();
     if (!audioCtx) return Promise.reject(new Error('no audioCtx'));
-    var resumeP;
-    try {
-        var st = audioCtx.state;
-        resumeP = (st === 'suspended' || st === 'interrupted') ? audioCtx.resume() : Promise.resolve();
-    } catch (eRes) {
-        return Promise.reject(eRes);
+    function resumeIfNeeded() {
+        try {
+            var st = audioCtx.state;
+            if (st === 'closed') return Promise.reject(new Error('context closed'));
+            if (st === 'suspended' || st === 'interrupted') {
+                var p = audioCtx.resume();
+                return (p && typeof p.then === 'function') ? p : Promise.resolve();
+            }
+            return Promise.resolve();
+        } catch (eR) {
+            return Promise.reject(eR);
+        }
     }
-    if (!resumeP || typeof resumeP.then !== 'function') resumeP = Promise.resolve();
-    return resumeP.then(function () {
-        isPlaying = true;
-        setTalkPlayButtonPlaying(true);
-        document.querySelectorAll('.playhead').forEach(function (ph) { ph.style.display = 'block'; });
-        nextNoteTime = audioCtx.currentTime + 0.05;
-        scheduler();
-        updateAvatarPositions();
-    });
+    return resumeIfNeeded()
+        .then(function () {
+            if (!audioCtx) return Promise.reject(new Error('no audioCtx'));
+            if (audioCtx.state === 'closed') {
+                initAudio();
+                if (!audioCtx) return Promise.reject(new Error('no audioCtx'));
+                return resumeIfNeeded();
+            }
+            if (audioCtx.state === 'suspended' || audioCtx.state === 'interrupted') return resumeIfNeeded();
+            return Promise.resolve();
+        })
+        .then(function () {
+            isPlaying = true;
+            setTalkPlayButtonPlaying(true);
+            document.querySelectorAll('.playhead').forEach(function (ph) { ph.style.display = 'block'; });
+            nextNoteTime = audioCtx.currentTime + 0.05;
+            scheduler();
+            updateAvatarPositions();
+        });
 }
 
 function setTalkPlayButtonPlaying(playing) {
