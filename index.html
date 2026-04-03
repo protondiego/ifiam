@@ -122,8 +122,8 @@
     position: absolute;
     left: 0;
     right: 0;
-    top: -10px;
-    bottom: -10px;
+    top: -28px;
+    bottom: -12px;
     z-index: 1;
   }
   .shell-main-top-splitter:hover,
@@ -1908,17 +1908,6 @@
     flex-direction: column;
     gap: 12px;
     align-items: stretch;
-  }
-  #win-breath .breath-viz-h {
-    flex-shrink: 0;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 8px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--text-dim);
-    padding: 6px 10px 5px;
-    border-bottom: 1px solid var(--border);
-    background: rgba(0, 0, 0, 0.28);
   }
   #win-breath .breath-ekg-wrap {
     flex-shrink: 0;
@@ -4414,7 +4403,6 @@
         <div class="breath-col-beat">
           <div class="breath-col-scroll">
             <div class="breath-spo2-wrap" aria-hidden="true" title="Decorative SpO₂-style readout and pleth — not a medical device">
-              <div class="breath-viz-h">O₂ saturation · pleth</div>
               <div class="breath-spo2-body">
                 <div class="breath-spo2-readout">
                   <span class="breath-spo2-pct" id="breathSpo2Pct">98.0</span>
@@ -4426,19 +4414,16 @@
               </div>
             </div>
             <div class="breath-bp-wrap" aria-hidden="true" title="Arterial pressure trace — stylized systolic, dicrotic notch, diastole">
-              <div class="breath-viz-h">Blood pressure (arterial)</div>
               <div class="breath-bp-trace">
                 <canvas class="breath-bp-canvas" id="breathBpCanvas" width="320" height="88"></canvas>
               </div>
             </div>
             <div class="breath-ekg-wrap" aria-hidden="true">
-              <div class="breath-viz-h">EKG</div>
               <div class="breath-ekg-trace">
                 <canvas class="breath-ekg-canvas" id="breathEkgCanvas" width="320" height="88"></canvas>
               </div>
             </div>
             <div class="breath-hgb-wrap" aria-hidden="true" title="Hemoglobin — four heme sites, cooperative O₂ binding (sigmoid)">
-              <div class="breath-viz-h">Hemoglobin · O₂</div>
               <div class="breath-hgb-body">
               <svg class="breath-hgb-svg" viewBox="0 0 168 82" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
                 <path class="breath-hgb-backbone" d="M44 26 L84 26 L124 26 M44 52 L84 52 L124 52 M44 26 L44 52 M84 26 L84 36 M84 46 L84 52 M124 26 L124 52"/>
@@ -11339,6 +11324,13 @@ opsStackOrder.forEach((op, idx) => {
     setBeatPanelHidden(!!collapsed);
     setBreathPanelHidden(!!collapsed);
   };
+  window.__ifiamSetBreathLayoutPanelsCollapsed = function (collapsed) {
+    var c = !!collapsed;
+    window.__ifiamSetBreathSidePanelsCollapsed(c);
+    var winL = document.getElementById('win-breath');
+    if (winL) winL.classList.toggle('breath-hide-bottom', c);
+    syncBreathGridSplitClass();
+  };
 })();
 
 (function initTablesPanel() {
@@ -17303,15 +17295,24 @@ window.ensureTalkVisualInit = function ensureTalkVisualInit() {
             g.classList.contains('clock-app-grid--right-collapsed') &&
             w.classList.contains('clock-content-wrap--tone-collapsed');
     }
+    function allBreathPanelsCollapsed() {
+        var wb = document.getElementById('win-breath');
+        if (!wb) return true;
+        return wb.classList.contains('breath-hide-beat') &&
+            wb.classList.contains('breath-hide-breath') &&
+            wb.classList.contains('breath-hide-bottom');
+    }
     function isFullyMinimized() {
-        return shell.classList.contains('topbar-autohide') && allClockPanelsCollapsed();
+        return shell.classList.contains('topbar-autohide') &&
+            allClockPanelsCollapsed() &&
+            allBreathPanelsCollapsed();
     }
     function syncShellTopStripLabel() {
         if (!shellTopSplit || !shell) return;
         var min = isFullyMinimized();
         var lbl = min
-            ? 'Show all panels — app bar, tables, controls, and mixer'
-            : 'Hide all panels — app bar and clock side / bottom strips';
+            ? 'Show all panels — app bar, clock & breath regions, tables, controls, and mixer'
+            : 'Hide all panels — app bar, clock & breath side / bottom strips';
         shellTopSplit.setAttribute('aria-expanded', min ? 'false' : 'true');
         shellTopSplit.setAttribute('aria-label', lbl);
         shellTopSplit.setAttribute('title', lbl);
@@ -17320,14 +17321,17 @@ window.ensureTalkVisualInit = function ensureTalkVisualInit() {
         applyShellTopbarCollapsedState(true);
         if (typeof window.__ifiamSetClockSidePanelsCollapsed === 'function') window.__ifiamSetClockSidePanelsCollapsed(true);
         if (typeof window.__ifiamSetToneStripCollapsed === 'function') window.__ifiamSetToneStripCollapsed(true);
+        if (typeof window.__ifiamSetBreathLayoutPanelsCollapsed === 'function') window.__ifiamSetBreathLayoutPanelsCollapsed(true);
         syncShellTopStripLabel();
-    }
-    function expandAllLayoutPanels() {
-        applyShellTopbarCollapsedState(false);
-        if (typeof window.__ifiamSetClockSidePanelsCollapsed === 'function') window.__ifiamSetClockSidePanelsCollapsed(false);
-        if (typeof window.__ifiamSetToneStripCollapsed === 'function') window.__ifiamSetToneStripCollapsed(false);
-        syncShellTopStripLabel();
-    }
+   
+```
+
+The tool might have broken the JSON - let me check. Actually I made an error - I didn't close the function properly. Let me read the file and fix.
+</think>
+
+
+<｜tool▁calls▁begin｜><｜tool▁call▁begin｜>
+Read
 
     function applyShellTopbarCollapsedState(collapsed) {
         if (!shell) return;
