@@ -2235,6 +2235,39 @@
   #win-breath.breath-hide-bottom .breath-grid.breath-app-grid--split .breath-grid-hsplitter {
     display: none !important;
   }
+  /* Breath split: hide beat/breath columns with 3px peek splitter (desktop); mirrors clock side panels */
+  #win-breath.breath-hide-beat:not(.breath-hide-breath) .breath-grid.breath-app-grid--split {
+    grid-template-columns: 0px 3px minmax(280px, 1fr) 5px minmax(180px, var(--breath-breath-w, 20%));
+  }
+  #win-breath.breath-hide-breath:not(.breath-hide-beat) .breath-grid.breath-app-grid--split {
+    grid-template-columns: minmax(180px, var(--breath-beat-w, 20%)) 5px minmax(280px, 1fr) 3px 0px;
+  }
+  #win-breath.breath-hide-beat.breath-hide-breath .breath-grid.breath-app-grid--split {
+    grid-template-columns: 0px 3px minmax(280px, 1fr) 3px 0px;
+  }
+  #win-breath.breath-hide-beat .breath-grid.breath-app-grid--split .breath-col-beat {
+    display: flex !important;
+    overflow: hidden;
+    visibility: hidden;
+    pointer-events: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    min-width: 0;
+  }
+  #win-breath.breath-hide-breath .breath-grid.breath-app-grid--split .breath-col-breath {
+    display: flex !important;
+    overflow: hidden;
+    visibility: hidden;
+    pointer-events: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    min-width: 0;
+  }
+  #win-breath .breath-grid-splitter.breath-grid-splitter--peek {
+    cursor: pointer;
+  }
   @media (max-width: 960px) {
     #win-breath .breath-col-beat {
       border-right: none;
@@ -3150,25 +3183,43 @@
   #win-breath.breath-beat-overlay-off .breath-col-beat .breath-ekg-wrap,
   #win-breath.breath-beat-overlay-off .breath-col-beat .breath-hgb-wrap { display: none !important; }
   #win-breath.breath-cry-overlay-off .breath-bottom-piano-col { display: none !important; }
-  /* Overlay off: no instruction panel — organs + breath box SVG only over sky */
+  /* Overlay off: same framed “window” as on, scaled down; no instruction lines */
+  #win-breath.breath-overlay-off .breath-col-viewport {
+    --breath-overlay-compact: 0.78;
+  }
   #win-breath.breath-overlay-off .breath-col-viewport .breath-state-top,
   #win-breath.breath-overlay-off .breath-col-viewport .breath-state-bottom { display: none !important; }
   #win-breath.breath-overlay-off .breath-col-viewport .breath-visual-area {
-    background: none;
-    border: none;
-    box-shadow: none;
-    padding: 0;
-    gap: 0;
-    border-radius: 0;
-    max-width: none;
+    background: radial-gradient(ellipse 92% 88% at 50% 50%,
+      rgba(8, 9, 20, 0.97) 0%,
+      rgba(8, 10, 22, 0.94) 38%,
+      rgba(10, 12, 26, 0.78) 68%,
+      rgba(14, 16, 32, 0.55) 100%);
+    border-radius: calc(14px * var(--breath-overlay-compact));
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    box-shadow:
+      0 0 0 1px rgba(0, 0, 0, 0.4),
+      0 calc(10px * var(--breath-overlay-compact)) calc(36px * var(--breath-overlay-compact)) rgba(0, 0, 0, 0.5),
+      inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    padding: calc(12px * var(--breath-overlay-compact)) calc(16px * var(--breath-overlay-compact)) calc(14px * var(--breath-overlay-compact));
+    gap: calc(8px * var(--breath-overlay-compact));
+    max-width: min(281px, 78vw);
+    margin-left: auto;
+    margin-right: auto;
   }
   #win-breath.breath-overlay-off .breath-col-viewport .b-svg-wrap {
-    background: none;
-    border-radius: 0;
-    box-shadow: none;
-    filter: none;
+    background: radial-gradient(ellipse 70% 70% at 50% 50%,
+      rgba(4, 5, 12, 1) 0%,
+      rgba(4, 5, 12, 0.96) 32%,
+      rgba(5, 6, 14, 0.42) 70%,
+      rgba(6, 8, 16, 0.08) 100%);
+    border-radius: calc(12px * var(--breath-overlay-compact));
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.07);
+    filter: drop-shadow(0 calc(2px * var(--breath-overlay-compact)) calc(10px * var(--breath-overlay-compact)) rgba(0, 0, 0, 0.5));
   }
-  #win-breath.breath-overlay-off .breath-viewport-body .breath-root { padding: 0; }
+  #win-breath.breath-overlay-off .breath-viewport-body .breath-root {
+    padding: calc(10px * var(--breath-overlay-compact));
+  }
   #win-breath #breathBoxFrameG { opacity: 0; pointer-events: none; transition: opacity 0.2s ease; }
   #win-breath.breath-overlay-off #breathBoxFrameG { opacity: 1; }
   #win-breath .b-btn--icon { padding: 0; width: 42px; height: 42px; min-width: 42px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; }
@@ -4466,7 +4517,7 @@
               <div class="sync-col"><canvas class="knob" data-type="fader" data-lbl="Cry Vol" data-min="0" data-max="100" data-val="42" data-key="hVol" data-color="#ff00ff"></canvas></div>
             </div>
             <div class="breath-overlay-toggle-row" role="toolbar" aria-label="Viewport and strip overlays">
-              <button type="button" class="b-btn b-btn--icon active" id="breathOverlayBtn" title="Breath overlay — phase text and frame on the viewport" aria-label="Breath overlay" aria-pressed="true">
+              <button type="button" class="b-btn b-btn--icon active" id="breathOverlayBtn" title="Breath overlay — phase instructions and full-size frame (off: same frame, smaller, no text)" aria-label="Breath overlay" aria-pressed="true">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M8 9h8M8 13h5"/></svg>
               </button>
               <button type="button" class="b-btn b-btn--icon active" id="beatOverlayBtn" title="Beat overlay — vitals column (SpO₂, BP, EKG, hemoglobin)" aria-label="Beat vitals overlay" aria-pressed="true">
@@ -10932,6 +10983,8 @@ opsStackOrder.forEach((op, idx) => {
   var STORAGE_BEAT = 'breathBeatColPx';
   var STORAGE_BREATH = 'breathBreathColPx';
   var STORAGE_BOTTOM = 'breathBottomRowPx';
+  var STORAGE_BEAT_COLLAPSE = 'ifiam_breathBeatPanelCollapsed';
+  var STORAGE_BREATH_COLLAPSE = 'ifiam_breathBreathPanelCollapsed';
   var minBeat = 180;
   var minBreath = 180;
   var minMiddle = 280;
@@ -11006,6 +11059,61 @@ opsStackOrder.forEach((op, idx) => {
     try { localStorage.setItem(STORAGE_BOTTOM, String(Math.round(h))); } catch (e) {}
   }
 
+  function updateBeatSplitterAria(collapsed) {
+    splitL.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+    splitL.setAttribute('aria-label', collapsed
+      ? 'Show beat panel — tap'
+      : 'Resize beat panel — drag or Arrow Left/Right — tap to hide');
+  }
+  function updateBreathSplitterAria(collapsed) {
+    splitR.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+    splitR.setAttribute('aria-label', collapsed
+      ? 'Show breath panel — tap'
+      : 'Resize breath panel — drag or Arrow Left/Right — tap to hide');
+  }
+  function syncBreathSidePanelsFromStorage() {
+    var win = document.getElementById('win-breath');
+    if (!win || !grid) return;
+    if (!mqBreath.matches) {
+      win.classList.remove('breath-hide-beat', 'breath-hide-breath');
+      splitL.classList.remove('breath-grid-splitter--peek');
+      splitR.classList.remove('breath-grid-splitter--peek');
+      updateBeatSplitterAria(false);
+      updateBreathSplitterAria(false);
+      return;
+    }
+    var hb = false;
+    var hr = false;
+    try {
+      hb = localStorage.getItem(STORAGE_BEAT_COLLAPSE) === '1';
+      hr = localStorage.getItem(STORAGE_BREATH_COLLAPSE) === '1';
+    } catch (eS) {}
+    win.classList.toggle('breath-hide-beat', hb);
+    win.classList.toggle('breath-hide-breath', hr);
+    splitL.classList.toggle('breath-grid-splitter--peek', hb);
+    splitR.classList.toggle('breath-grid-splitter--peek', hr);
+    updateBeatSplitterAria(hb);
+    updateBreathSplitterAria(hr);
+  }
+  function setBeatPanelHidden(hidden) {
+    var win = document.getElementById('win-breath');
+    if (!win || !mqBreath.matches) return;
+    try { localStorage.setItem(STORAGE_BEAT_COLLAPSE, hidden ? '1' : '0'); } catch (eH) {}
+    win.classList.toggle('breath-hide-beat', hidden);
+    splitL.classList.toggle('breath-grid-splitter--peek', hidden);
+    updateBeatSplitterAria(hidden);
+    clampBreathLayoutFromVars();
+  }
+  function setBreathPanelHidden(hidden) {
+    var win = document.getElementById('win-breath');
+    if (!win || !mqBreath.matches) return;
+    try { localStorage.setItem(STORAGE_BREATH_COLLAPSE, hidden ? '1' : '0'); } catch (eH2) {}
+    win.classList.toggle('breath-hide-breath', hidden);
+    splitR.classList.toggle('breath-grid-splitter--peek', hidden);
+    updateBreathSplitterAria(hidden);
+    clampBreathLayoutFromVars();
+  }
+
   function clampBreathLayoutFromVars() {
     if (!grid.classList.contains('breath-app-grid--split') || !breathLayoutSafe()) return;
     var st = getComputedStyle(grid);
@@ -11032,8 +11140,9 @@ opsStackOrder.forEach((op, idx) => {
   function syncBreathGridSplitClass() {
     var win = document.getElementById('win-breath');
     if (!win || !grid) return;
+    syncBreathSidePanelsFromStorage();
     var mqOk = mqBreath.matches;
-    var canSplit = mqOk && !win.classList.contains('breath-hide-beat') && !win.classList.contains('breath-hide-breath');
+    var canSplit = mqOk;
     grid.classList.toggle('breath-app-grid--split', canSplit);
     if (!canSplit) return;
     if (!breathLayoutSafe()) {
@@ -11061,32 +11170,70 @@ opsStackOrder.forEach((op, idx) => {
 
   function wireVSplitter(split, which) {
     var dragging = false;
+    var dragMoved = false;
+    var startX = 0;
+    var startY = 0;
+    var DRAG_THRESHOLD = 6;
     function startDrag(e) {
       if (!grid.classList.contains('breath-app-grid--split')) return;
       if (e.pointerType === 'mouse' && e.button !== 0) return;
+      var win = document.getElementById('win-breath');
+      if (!win) return;
+      if (which === 'left' && win.classList.contains('breath-hide-beat')) {
+        setBeatPanelHidden(false);
+        dragging = true;
+        dragMoved = true;
+        split.classList.add('dragging');
+        e.preventDefault();
+        try { split.setPointerCapture(e.pointerId); } catch (err) {}
+        return;
+      }
+      if (which === 'right' && win.classList.contains('breath-hide-breath')) {
+        setBreathPanelHidden(false);
+        dragging = true;
+        dragMoved = true;
+        split.classList.add('dragging');
+        e.preventDefault();
+        try { split.setPointerCapture(e.pointerId); } catch (err2) {}
+        return;
+      }
       dragging = true;
+      dragMoved = false;
+      startX = e.clientX;
+      startY = e.clientY;
       split.classList.add('dragging');
       e.preventDefault();
-      try { split.setPointerCapture(e.pointerId); } catch (err) {}
+      try { split.setPointerCapture(e.pointerId); } catch (err3) {}
     }
     function onMove(e) {
       if (!dragging) return;
+      if (!dragMoved) {
+        if (Math.abs(e.clientX - startX) < DRAG_THRESHOLD && Math.abs(e.clientY - startY) < DRAG_THRESHOLD) return;
+        dragMoved = true;
+      }
       var rect = grid.getBoundingClientRect();
       if (which === 'left') applyBeatW(e.clientX - rect.left);
       else applyBreathW(rect.right - e.clientX);
     }
-    function endDrag(e) {
+    function endDrag(e, allowTapHide) {
       if (!dragging) return;
+      var wasTap = !dragMoved;
       dragging = false;
       split.classList.remove('dragging');
       try {
         if (e && e.pointerId != null) split.releasePointerCapture(e.pointerId);
       } catch (err) {}
+      if (wasTap && allowTapHide && mqBreath.matches) {
+        var win2 = document.getElementById('win-breath');
+        if (!win2) return;
+        if (which === 'left' && !win2.classList.contains('breath-hide-beat')) setBeatPanelHidden(true);
+        else if (which === 'right' && !win2.classList.contains('breath-hide-breath')) setBreathPanelHidden(true);
+      }
     }
     split.addEventListener('pointerdown', startDrag);
     split.addEventListener('pointermove', onMove);
-    split.addEventListener('pointerup', endDrag);
-    split.addEventListener('pointercancel', endDrag);
+    split.addEventListener('pointerup', function (ev) { endDrag(ev, true); });
+    split.addEventListener('pointercancel', function (ev) { endDrag(ev, false); });
     split.addEventListener('lostpointercapture', function () {
       dragging = false;
       split.classList.remove('dragging');
@@ -11094,6 +11241,9 @@ opsStackOrder.forEach((op, idx) => {
     split.addEventListener('keydown', function (e) {
       if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
       if (!grid.classList.contains('breath-app-grid--split')) return;
+      var winK = document.getElementById('win-breath');
+      if (which === 'left' && winK && winK.classList.contains('breath-hide-beat')) return;
+      if (which === 'right' && winK && winK.classList.contains('breath-hide-breath')) return;
       var d = e.key === 'ArrowRight' ? 16 : -16;
       if (which === 'left') {
         var beatEl = grid.querySelector('.breath-col-beat');
@@ -11107,6 +11257,20 @@ opsStackOrder.forEach((op, idx) => {
   }
   wireVSplitter(splitL, 'left');
   wireVSplitter(splitR, 'right');
+  if (typeof window.ifiamBindLongPress === 'function') {
+    window.ifiamBindLongPress(splitL, 480, function () {
+      if (!mqBreath.matches || !grid.classList.contains('breath-app-grid--split')) return;
+      var winLp = document.getElementById('win-breath');
+      if (!winLp) return;
+      setBeatPanelHidden(!winLp.classList.contains('breath-hide-beat'));
+    });
+    window.ifiamBindLongPress(splitR, 480, function () {
+      if (!mqBreath.matches || !grid.classList.contains('breath-app-grid--split')) return;
+      var winLp2 = document.getElementById('win-breath');
+      if (!winLp2) return;
+      setBreathPanelHidden(!winLp2.classList.contains('breath-hide-breath'));
+    });
+  }
 
   if (splitB) {
     var dragB = false;
@@ -11164,18 +11328,17 @@ opsStackOrder.forEach((op, idx) => {
     breathResizeQueued = true;
     requestAnimationFrame(function () {
       breathResizeQueued = false;
-      var win = document.getElementById('win-breath');
-      if (!win || !grid) return;
-      var mqOk = mqBreath.matches;
-      var canSplit = mqOk && !win.classList.contains('breath-hide-beat') && !win.classList.contains('breath-hide-breath');
-      grid.classList.toggle('breath-app-grid--split', canSplit);
-      if (!canSplit || !breathLayoutSafe()) return;
-      clampBreathLayoutFromVars();
+      syncBreathGridSplitClass();
     });
   });
   if (mqBreath.addEventListener) mqBreath.addEventListener('change', syncBreathGridSplitClass);
   else if (mqBreath.addListener) mqBreath.addListener(syncBreathGridSplitClass);
   window.__ifiamSyncBreathGridSplit = syncBreathGridSplitClass;
+  window.__ifiamSyncBreathSidePanelsFromStorage = syncBreathSidePanelsFromStorage;
+  window.__ifiamSetBreathSidePanelsCollapsed = function (collapsed) {
+    setBeatPanelHidden(!!collapsed);
+    setBreathPanelHidden(!!collapsed);
+  };
 })();
 
 (function initTablesPanel() {
@@ -17176,7 +17339,7 @@ window.ensureTalkVisualInit = function ensureTalkVisualInit() {
 
     (function resetBreathPanelsVisible() {
         var w = document.getElementById('win-breath');
-        if (w) w.classList.remove('breath-hide-beat', 'breath-hide-breath', 'breath-hide-bottom');
+        if (w) w.classList.remove('breath-hide-bottom');
     })();
     if (typeof window.__ifiamSyncBreathGridSplit === 'function') window.__ifiamSyncBreathGridSplit();
     if (shell) {
